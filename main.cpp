@@ -1,3 +1,4 @@
+// This file demonstrates the basic operations of OpenCV2
 #include <QtGlobal>
 
 #include <opencv2/core/core.hpp>
