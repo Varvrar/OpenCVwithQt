@@ -72,6 +72,32 @@ void colorReduce( cv::Mat& image, int div )
     }
 }
 
+void sharpen( const cv::Mat& image, cv::Mat& result )
+{
+    // Allocate memory if necessary
+    result.create( image.size( ), image.type( ) );
+
+    // For all rows, except first and last
+    for ( int j = 1; j < image.rows - 1; j++ )
+    {
+        const uchar* previous = image.ptr< const uchar >( j - 1 );  // Previous row
+        const uchar* current = image.ptr< const uchar >( j );  // Current row
+        const uchar* next = image.ptr< const uchar >( j + 1 );  // Next row
+
+        uchar* output = result.ptr< uchar >( j );  // Output row
+        for ( int i = 1; i < image.cols - 1; i++ )
+        {
+            // Core formula
+            *output++ = cv::saturate_cast< uchar >( 5*current[i] - current[i-1] - current[i+1] - previous[i] - next[i] );
+        }
+    }
+
+    // Set the unprocess pixels to 0
+    result.row(0).setTo( cv::Scalar( 0 ) );
+    result.row(result.rows-1).setTo(cv::Scalar(0));
+    result.col(0).setTo(cv::Scalar(0));
+    result.col(result.cols-1).setTo(cv::Scalar(0));
+}
 
 int main( )
 {
