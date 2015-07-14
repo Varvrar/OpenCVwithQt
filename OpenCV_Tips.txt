@@ -6,3 +6,4 @@ isContinuous( ) - tells us if the image has been padded or not.
 Advanced Topics:
 For efficiency reasons, an image can be padded with extra pixels at the end of each row.
 
+If you subtract its Laplacian from an image, the image edges are amplified giving a sharper image.
