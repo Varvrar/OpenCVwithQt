@@ -1,0 +1,8 @@
+Frequently used methods of class Mat:
+elemSize( )
+total( ) - returns the total number of items in a mat.
+isContinuous( ) - tells us if the image has been padded or not.
+
+Advanced Topics:
+For efficiency reasons, an image can be padded with extra pixels at the end of each row.
+
