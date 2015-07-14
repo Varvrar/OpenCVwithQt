@@ -157,23 +157,6 @@ void sharpen( const cv::Mat& image, cv::Mat& result )
 
 int main( )
 {
-#if 0
-    cv::Mat image;
-    cout << image.size( ) << endl;
-
-    std::cout << "size: " << image.size().height << " , "
-    << image.size().width << std::endl;
-#endif
-
-#if 0
-    cv::Mat ima1(240,320,CV_32FC3,cv::Scalar(12, 12, 0));
-    cv::Mat ima2(240,320,CV_8U,cv::Scalar(255));
-    cv::imshow( "F", ima1 );
-    cv::imshow( "U", ima2 );
-    cv::waitKey( );
-#endif
-
-#if 1
     // Read an image
     cv::Mat image = cv::imread( "test.jpg" );
 
@@ -183,39 +166,40 @@ int main( )
         return -1;
     }
 
-    // Do some processing
+    // Process input image
     cv::Mat result;
     cv::flip( image, result, 1 );  // positive for horizontal
                                    // 0 for vertical,
                                    // negative for both
+
+    cv::Mat grey;
+    cv::cvtColor( result, grey, CV_BGR2GRAY );
+    cv::Mat sharpened;
+    sharpen( grey, sharpened );
+
     salt( result, 5000 );
 
     cv::Mat clonedResult = result.clone( );
-    colorReduce( clonedResult, 64 );
 
-  #if 0
-    cv::Mat image2, image3;
-    image2 = result;
-    result.copyTo( image3 );
-    cv::imshow( "ReferSame", image2 );
-    cv::imshow( "NewCloned", image3 );
-  #endif
+    colorReduce( clonedResult, 32 );
 
-    cv::namedWindow( "My Image" );
-    cv::imshow( "My Image", image );
+    cv::Mat overloadResult;
+    colorReduce( result, overloadResult, 128 );
 
-    cv::namedWindow( "ClonedResult" );
-    cv::imshow( "ClonedResult", clonedResult );
+    cv::imwrite( "flippedGrey.jpg", grey );
+    cv::imwrite( "flippedSharpened.jpg", sharpened );
+    cv::imwrite( "flippedSalted.jpg", result );
+    cv::imwrite( "clonedFlippedColorReduced.jpg", clonedResult );
+    cv::imwrite( "overloadFlippedColorReduced.jpg", overloadResult );
+
+    cv::imshow( "Original", image );
+    cv::imshow( "Flipped Grey", grey );
+    cv::imshow( "Sharpened", sharpened );
+    cv::imshow( "Flipped and Salted", result );
+    cv::imshow( "Cloned Color Reduce", clonedResult );
+    cv::imshow( "Overload Color Reduce", overloadResult );
     cv::waitKey( );
 
-    cv::imwrite( "hflipped.jpg", result );
-#endif
-
-#if 0
-    cv::Mat fromFunc = function( );
-    cv::imshow( "From Func", fromFunc );
-    cv::waitKey( );
-#endif
 
 #if 0
     IplImage* iplimg = cvLoadImage( "test.jpg" );
@@ -231,5 +215,6 @@ int main( )
     //cv::imshow( "Smart Pointer Wrapper", pIplimg );
     cv::waitKey( );
 #endif
+
     return 0;
 }
