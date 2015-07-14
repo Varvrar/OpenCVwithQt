@@ -1,21 +1,29 @@
-// This file demonstrates the basic operations of OpenCV2
+// This file demonstrates the basic operations of OpenCV2 APIs
+
+// Qt Includes
 #include <QtGlobal>
 
+// OpenCV Includes
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
+// System Includes
 #include <iostream>
 using std::cout;
 using std::endl;
 
-cv::Mat function( )
+// A simlest function demo
+cv::Mat simpleFunction( )
 {
-    // Create image
+    // Create an image
     cv::Mat ima( 240, 320, CV_8U, cv::Scalar( 100 ) );
     // Return it
     return ima;
 }
 
+// Add 'salt and pepper' noise on an existing iamge,
+// where parameter n is the number of noise points
 void salt( cv::Mat& image, int n )
 {
     for ( int k = 0; k < n; k++ )
@@ -23,16 +31,17 @@ void salt( cv::Mat& image, int n )
         int i = qrand( ) % image.cols;
         int j = qrand( ) % image.rows;
 
-        if ( image.channels() == 1 )
+        if ( image.channels( ) == 1 )
         {
             // Accessing method 1
             cv::Mat_< uchar > im2 = image;
             im2( j, i ) = 255;
 
             // Accessing method 2
+            // Note: at method is not fast enough.
             //image.at< uchar >( j, i ) = 255;
         }
-        else if ( image.channels() == 3 )
+        else if ( image.channels( ) == 3 )
         {
             // Accessing method 1
             cv::Mat_< cv::Vec3b > im2 = image;
@@ -49,8 +58,11 @@ void salt( cv::Mat& image, int n )
     }
 }
 
+// Reduce the color range of an image
 void colorReduce( cv::Mat& image, int div )
 {
+    // Implementation 1
+    /*
     int nl = image.rows;  // Number of lines
     int nc = image.cols * image.channels();  // Total number of elements per line
 
@@ -70,8 +82,52 @@ void colorReduce( cv::Mat& image, int div )
             data[i] =  data[i] - data[i]%div + div/2;
         }
     }
+    */
+
+    // Implementation 2
+    // Using iterator is because of its convenience and safety, instead of its speed.
+    cv::Mat_< cv::Vec3b >::iterator it = image.begin< cv::Vec3b >( );  // Obtain iterator at initial position
+
+    cv::Mat_< cv::Vec3b >::iterator itEnd = image.end< cv::Vec3b >( );  // Obtain end position
+
+    // Loop over all pixels
+    for ( ; it != itEnd; ++it )
+    {
+        (*it)[0]=(*it)[0]/div*div + div/2;
+        (*it)[1]=(*it)[1]/div*div + div/2;
+        (*it)[2]=(*it)[2]/div*div + div/2;
+    }
 }
 
+// Reduce the color range of an image
+void colorReduce( const cv::Mat& image, cv::Mat& result, int div )
+{
+    result.create( image.rows, image.cols, image.type( ) );
+
+    int nl = image.rows;  // Number of lines
+    int nc = image.cols * image.channels( );  // Total number of elements per line
+
+    for ( int j = 0; j < nl; j++ )
+    {
+        // Get the address of input and output row j
+        const uchar* data_in = image.ptr< uchar >( j );
+        uchar* data_out = result.ptr< uchar >( j );
+
+        for ( int i = 0; i < nc; i++ )
+        {
+            // Process each pixel
+            // Formula 1
+            //data_out[i] = data_in[i]/div*div + div/2;
+            // Equivalent statement
+            //*data_out++ = *data_in / div*div + div/2;
+
+            // Formula 2
+            data_out[i] =  data_in[i] - data_in[i]%div + div/2;
+        }
+    }
+}
+
+// Sharpen an image with Laplacian operator
 void sharpen( const cv::Mat& image, cv::Mat& result )
 {
     // Allocate memory if necessary
@@ -87,16 +143,16 @@ void sharpen( const cv::Mat& image, cv::Mat& result )
         uchar* output = result.ptr< uchar >( j );  // Output row
         for ( int i = 1; i < image.cols - 1; i++ )
         {
-            // Core formula
-            *output++ = cv::saturate_cast< uchar >( 5*current[i] - current[i-1] - current[i+1] - previous[i] - next[i] );
+            // Core formula of Laplacian operator
+            *output++ = cv::saturate_cast< uchar >( 5 * current[i] - current[i-1] - current[i+1] - previous[i] - next[i] );
         }
     }
 
     // Set the unprocess pixels to 0
-    result.row(0).setTo( cv::Scalar( 0 ) );
-    result.row(result.rows-1).setTo(cv::Scalar(0));
-    result.col(0).setTo(cv::Scalar(0));
-    result.col(result.cols-1).setTo(cv::Scalar(0));
+    result.row( 0 ).setTo( cv::Scalar( 0 ) );
+    result.row( result.rows - 1 ).setTo( cv::Scalar( 0 ) );
+    result.col( 0 ).setTo( cv::Scalar( 0 ) );
+    result.col( result.cols - 1 ).setTo( cv::Scalar( 0 ) );
 }
 
 int main( )
