@@ -155,6 +155,24 @@ void sharpen( const cv::Mat& image, cv::Mat& result )
     result.col( result.cols - 1 ).setTo( cv::Scalar( 0 ) );
 }
 
+// Sharpen an image with Laplacian operator,
+// with the help of API filter2D,
+// in this way, a 3-channel color image can be processed
+void sharpen2D( const cv::Mat& image, cv::Mat& result )
+{
+    // Construct kernel(all entries initialized to 0)
+    cv::Mat kernel( 3, 3, CV_32F, cv::Scalar( 0 ) );
+    // Assigns kernel values
+    kernel.at< float >( 1, 1 ) = 5.0;
+    kernel.at< float >( 0, 1 ) = -1.0;
+    kernel.at< float >( 2, 1 ) = -1.0;
+    kernel.at< float >( 1, 0 ) = -1.0;
+    kernel.at< float >( 1, 2 ) = -1.0;
+
+    // Filter the image
+    cv::filter2D( image, result, image.depth( ), kernel );
+}
+
 int main( )
 {
     // Read an image
@@ -177,6 +195,10 @@ int main( )
     cv::Mat sharpened;
     sharpen( grey, sharpened );
 
+    // Example of using kernel matrix
+    cv::Mat useKernelSharpened;
+    sharpen2D( image, useKernelSharpened );
+
     salt( result, 5000 );
 
     cv::Mat clonedResult = result.clone( );
@@ -198,6 +220,7 @@ int main( )
     cv::imshow( "Flipped and Salted", result );
     cv::imshow( "Cloned Color Reduce", clonedResult );
     cv::imshow( "Overload Color Reduce", overloadResult );
+    cv::imshow( "Use Kernel Matrix", useKernelSharpened );
     cv::waitKey( );
 
 
